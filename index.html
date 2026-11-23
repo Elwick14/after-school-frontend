@@ -105,12 +105,42 @@
         toggleCart() {
           this.showLessons = !this.showLessons;
         },
-        submitOrder() {
-          this.orderMessage = "Thank you " + this.name + ", your order has been submitted!";
-          this.cart = [];
-          this.name = "";
-          this.phone = "";
-          this.showLessons = true;
+               submitOrder() {
+          const baseUrl = "https://m01147721-after-school-backend.onrender.com";
+
+          // the order to save
+          const order = {
+            name: this.name,
+            phone: this.phone,
+            lessonIDs: this.cart.map(item => item._id),
+            spaces: this.cart.length
+          };
+
+          // 1. POST: save the new order
+          fetch(baseUrl + "/orders", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(order)
+          })
+            .then(response => response.json())
+            .then(() => {
+              // 2. PUT: update the remaining spaces of each lesson in the cart
+              const uniqueLessons = [...new Set(this.cart)];
+              return Promise.all(uniqueLessons.map(lesson =>
+                fetch(baseUrl + "/lessons/" + lesson._id, {
+                  method: "PUT",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ space: lesson.space })
+                })
+              ));
+            })
+            .then(() => {
+              this.orderMessage = "Thank you " + this.name + ", your order has been submitted!";
+              this.cart = [];
+              this.name = "";
+              this.phone = "";
+              this.showLessons = true;
+            });
         }
       },
       created() {
