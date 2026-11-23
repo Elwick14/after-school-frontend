@@ -19,8 +19,28 @@
 
     <!-- Lessons page -->
     <div v-if="showLessons">
+      <!-- Sort controls -->
+      <div class="row mb-3">
+        <div class="col-md-3">
+          <label class="form-label">Sort by</label>
+          <select class="form-select" v-model="sortBy">
+            <option value="topic">Subject</option>
+            <option value="location">Location</option>
+            <option value="price">Price</option>
+            <option value="space">Spaces</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Order</label>
+          <select class="form-select" v-model="sortOrder">
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+          </select>
+        </div>
+      </div>
+
       <div class="row">
-        <div class="col-md-4 mb-3" v-for="lesson in lessons" :key="lesson._id">
+        <div class="col-md-4 mb-3" v-for="lesson in sortedLessons" :key="lesson._id">
           <div class="card p-3">
             <h5><i class="fa-solid fa-book"></i> {{ lesson.topic }}</h5>
             <p class="mb-1">Location: {{ lesson.location }}</p>
@@ -69,7 +89,9 @@
           showLessons: true,
           name: "",
           phone: "",
-          orderMessage: ""
+          orderMessage: "",
+          sortBy: "topic",
+          sortOrder: "asc"
         };
       },
       computed: {
@@ -84,6 +106,19 @@
         },
         canCheckout() {
           return this.isNameValid && this.isPhoneValid;
+        },
+        sortedLessons() {
+          const list = [...this.lessons];
+          list.sort((a, b) => {
+            let result;
+            if (typeof a[this.sortBy] === "string") {
+              result = a[this.sortBy].localeCompare(b[this.sortBy]);
+            } else {
+              result = a[this.sortBy] - b[this.sortBy];
+            }
+            return this.sortOrder === "asc" ? result : -result;
+          });
+          return list;
         }
       },
       methods: {
@@ -105,10 +140,9 @@
         toggleCart() {
           this.showLessons = !this.showLessons;
         },
-               submitOrder() {
+        submitOrder() {
           const baseUrl = "https://m01147721-after-school-backend.onrender.com";
 
-          // the order to save
           const order = {
             name: this.name,
             phone: this.phone,
@@ -116,7 +150,6 @@
             spaces: this.cart.length
           };
 
-          // 1. POST: save the new order
           fetch(baseUrl + "/orders", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -124,7 +157,6 @@
           })
             .then(response => response.json())
             .then(() => {
-              // 2. PUT: update the remaining spaces of each lesson in the cart
               const uniqueLessons = [...new Set(this.cart)];
               return Promise.all(uniqueLessons.map(lesson =>
                 fetch(baseUrl + "/lessons/" + lesson._id, {
