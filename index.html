@@ -11,18 +11,34 @@
 <body>
   <div id="app" class="container py-4">
     <h1>After School Classes</h1>
-    <p><i class="fa-solid fa-cart-shopping"></i> Cart: {{ cartItemCount }}</p>
+    <button class="btn btn-success mb-3" @click="toggleCart" :disabled="cart.length === 0">
+      <i class="fa-solid fa-cart-shopping"></i> Cart ({{ cartItemCount }})
+    </button>
 
-    <div class="row">
-      <div class="col-md-4 mb-3" v-for="lesson in lessons" :key="lesson._id">
-        <div class="card p-3">
-          <h5><i class="fa-solid fa-book"></i> {{ lesson.topic }}</h5>
-          <p class="mb-1">Location: {{ lesson.location }}</p>
-          <p class="mb-1">Price: £{{ lesson.price }}</p>
-          <p class="mb-1">Spaces: {{ lesson.space }}</p>
-          <button class="btn btn-primary" @click="addToCart(lesson)" :disabled="lesson.space === 0">Add to Cart</button>
+    <!-- Lessons page -->
+    <div v-if="showLessons">
+      <div class="row">
+        <div class="col-md-4 mb-3" v-for="lesson in lessons" :key="lesson._id">
+          <div class="card p-3">
+            <h5><i class="fa-solid fa-book"></i> {{ lesson.topic }}</h5>
+            <p class="mb-1">Location: {{ lesson.location }}</p>
+            <p class="mb-1">Price: £{{ lesson.price }}</p>
+            <p class="mb-1">Spaces: {{ lesson.space }}</p>
+            <button class="btn btn-primary" @click="addToCart(lesson)" :disabled="lesson.space === 0">Add to Cart</button>
+          </div>
         </div>
       </div>
+    </div>
+
+    <!-- Cart page -->
+    <div v-else>
+      <h2>Your Cart</h2>
+      <ul class="list-group mb-3">
+        <li class="list-group-item d-flex justify-content-between align-items-center" v-for="(item, index) in cart" :key="index">
+          <span>{{ item.topic }} - {{ item.location }} (£{{ item.price }})</span>
+          <button class="btn btn-danger btn-sm" @click="removeFromCart(index)">Remove</button>
+        </li>
+      </ul>
     </div>
   </div>
 
@@ -31,7 +47,7 @@
 
     createApp({
       data() {
-        return { lessons: [], cart: [] };
+        return { lessons: [], cart: [], showLessons: true };
       },
       computed: {
         cartItemCount() {
@@ -44,6 +60,17 @@
             lesson.space--;
             this.cart.push(lesson);
           }
+        },
+        removeFromCart(index) {
+          const lesson = this.cart[index];
+          lesson.space++;
+          this.cart.splice(index, 1);
+          if (this.cart.length === 0) {
+            this.showLessons = true;
+          }
+        },
+        toggleCart() {
+          this.showLessons = !this.showLessons;
         }
       },
       created() {
