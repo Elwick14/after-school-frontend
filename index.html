@@ -78,35 +78,41 @@
     </div>
   </div>
 
-  <script>
+    <script>
     const { createApp } = Vue;
 
     createApp({
+      // data(): the values the page keeps track of
       data() {
         return {
-          lessons: [],
-          cart: [],
-          showLessons: true,
-          name: "",
-          phone: "",
-          orderMessage: "",
-          sortBy: "topic",
-          sortOrder: "asc"
+          lessons: [],        // all lessons, loaded from the back-end
+          cart: [],           // lessons the user added to the cart
+          showLessons: true,  // true = lessons page, false = cart page
+          name: "",           // checkout name
+          phone: "",          // checkout phone
+          orderMessage: "",   // confirmation message after checkout
+          sortBy: "topic",    // attribute used for sorting
+          sortOrder: "asc"    // "asc" or "desc"
         };
       },
+      // computed: values worked out from the data; they update automatically
       computed: {
         cartItemCount() {
           return this.cart.length;
         },
+        // name must be letters (and spaces) only
         isNameValid() {
           return /^[A-Za-z ]+$/.test(this.name);
         },
+        // phone must be digits only
         isPhoneValid() {
           return /^[0-9]+$/.test(this.phone);
         },
+        // the Checkout button is enabled only when both are valid
         canCheckout() {
           return this.isNameValid && this.isPhoneValid;
         },
+        // a sorted copy of the lessons, based on the dropdown choices
         sortedLessons() {
           const list = [...this.lessons];
           list.sort((a, b) => {
@@ -121,7 +127,9 @@
           return list;
         }
       },
+      // methods: functions the page can call (e.g. from buttons)
       methods: {
+        // add one space of a lesson to the cart and reduce its spaces by one
         addToCart(lesson) {
           if (lesson.space > 0) {
             lesson.space--;
@@ -129,6 +137,7 @@
             this.orderMessage = "";
           }
         },
+        // remove a lesson from the cart and give its space back
         removeFromCart(index) {
           const lesson = this.cart[index];
           lesson.space++;
@@ -137,9 +146,11 @@
             this.showLessons = true;
           }
         },
+        // switch between the lessons page and the cart page
         toggleCart() {
           this.showLessons = !this.showLessons;
         },
+        // checkout: save the order (POST), then update each lesson's spaces (PUT)
         submitOrder() {
           const baseUrl = "https://m01147721-after-school-backend.onrender.com";
 
@@ -157,6 +168,7 @@
           })
             .then(response => response.json())
             .then(() => {
+              // new Set removes duplicates, so each lesson is updated once
               const uniqueLessons = [...new Set(this.cart)];
               return Promise.all(uniqueLessons.map(lesson =>
                 fetch(baseUrl + "/lessons/" + lesson._id, {
@@ -175,6 +187,7 @@
             });
         }
       },
+      // created(): runs once when the app starts; loads the lessons (GET)
       created() {
         fetch("https://m01147721-after-school-backend.onrender.com/lessons")
           .then(response => response.json())
