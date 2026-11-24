@@ -16,7 +16,6 @@
     </button>
 
     <div class="alert alert-success" v-if="orderMessage">{{ orderMessage }}</div>
-      <p v-if="loading">Loading lessons, please wait...</p>
 
     <!-- Lessons page -->
     <div v-if="showLessons">
@@ -88,7 +87,6 @@
       data() {
         return {
           lessons: [],        // all lessons, loaded from the back-end
-         loading: true,      // true while the lessons are being loaded
           cart: [],           // lessons the user added to the cart
           showLessons: true,  // true = lessons page, false = cart page
           name: "",           // checkout name
@@ -197,10 +195,8 @@
       // created(): runs once when the app starts; loads the lessons (GET)
       created() {
         fetch("https://m01147721-after-school-backend.onrender.com/lessons")
-                    .then(data => {
-            this.lessons = data;
-            this.loading = false;
-          });
+          .then(response => response.json())
+          .then(data => { this.lessons = data; });
       }
     }).mount("#app");
   </script>
