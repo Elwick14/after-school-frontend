@@ -62,7 +62,7 @@
           <button class="btn btn-danger btn-sm" @click="removeFromCart(index)">Remove</button>
         </li>
       </ul>
-
+      <p class="fw-bold">Total: £{{ cartTotal }}</p>
       <!-- Checkout -->
       <h3>Checkout</h3>
       <div class="mb-3">
@@ -101,6 +101,10 @@
       computed: {
         cartItemCount() {
           return this.cart.length;
+        },
+                // total price of everything in the cart
+        cartTotal() {
+          return this.cart.reduce((sum, item) => sum + item.price, 0);
         },
         // name must be letters (and spaces) only
         isNameValid() {
