@@ -47,6 +47,7 @@
             <p class="mb-1">Location: {{ lesson.location }}</p>
             <p class="mb-1">Price: £{{ lesson.price }}</p>
             <p class="mb-1">Spaces: {{ lesson.space }}</p>
+                        <p class="text-danger mb-1" v-if="lesson.space === 0">Sold out</p>
             <button class="btn btn-primary" @click="addToCart(lesson)" :disabled="lesson.space === 0">Add to Cart</button>
           </div>
         </div>
